@@ -2,6 +2,7 @@ package com.infinite.busTicket.service;
 
 import com.infinite.busTicket.entity.Users;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
+import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface UserService {
 
     Users getById(Long id);
 
-    boolean updateUser(Long id, Users user);
+    boolean updateUser(Long id, ProfileUpdateRequest profile);
 
     boolean changePassword(Long id, ChangePasswordRequest req);
 }

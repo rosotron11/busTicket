@@ -3,6 +3,7 @@ package com.infinite.busTicket.controller;
 import com.infinite.busTicket.config.JwtUtil;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
 import com.infinite.busTicket.entity.request.LoginRequest;
+import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
 import com.infinite.busTicket.entity.response.LoginResponse;
 import com.infinite.busTicket.entity.Users;
@@ -59,9 +60,9 @@ public class UserController {
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Users user)
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody ProfileUpdateRequest profile)
     {
-        userService.updateUser(id,user);
+        userService.updateUser(id,profile);
         return new ResponseEntity<>("Updated", HttpStatus.OK);
     }
 

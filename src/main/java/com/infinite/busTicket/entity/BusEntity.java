@@ -28,7 +28,7 @@ public class BusEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String bus_number;
+    private String busNumber;
 
     private String source;
     private String destination;
@@ -48,5 +48,6 @@ public class BusEntity {
     private Users conductor;
 
     @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference
     private List<TicketEntity> tickets;
 }

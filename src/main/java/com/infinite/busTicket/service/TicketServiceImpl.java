@@ -25,11 +25,12 @@ public class TicketServiceImpl implements TicketService{
 
     @Override
     public void createTicket(TicketEntity ticket) {
-        BusEntity bus=ticket.getBus();
-        System.out.println(bus.getSeats());
-        bus.setSeats(bus.getSeats()-1);
-        busRepository.save(bus);
-        ticket.setBus(bus);
+//        BusEntity bus=ticket.getBus();
+//        System.out.println(bus.toString());
+//        System.out.println(bus.getSeats());
+//        bus.setSeats(bus.getSeats()-1);
+//        busRepository.save(bus);
+//        ticket.setBus(bus);
         ticketRepository.save(ticket);
     }
 

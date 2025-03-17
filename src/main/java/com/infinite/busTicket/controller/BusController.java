@@ -26,6 +26,10 @@ public class BusController {
     @PostMapping
     public ResponseEntity<?> createBus(@RequestBody BusEntity bus)
     {
+        if(bus.getTimeOfDropping().isBefore(bus.getTimeOfBoarding()))
+        {
+            return new ResponseEntity<>("Drop before Board",HttpStatus.CREATED);
+        }
         busService.createBus(bus);
         return new ResponseEntity<>("Created",HttpStatus.CREATED);
     }
@@ -57,5 +61,11 @@ public class BusController {
     {
 
         return new ResponseEntity<>(busService.searchBus(source,destination,doj),HttpStatus.OK);
+    }
+
+    @GetMapping("/location")
+    public ResponseEntity<?> getLocation()
+    {
+        return new ResponseEntity<>(busService.getAllLocation(),HttpStatus.OK);
     }
 }

@@ -3,6 +3,7 @@ package com.infinite.busTicket.service;
 import com.infinite.busTicket.config.SecurityConfig;
 import com.infinite.busTicket.entity.Users;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
+import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
 import com.infinite.busTicket.repository.UserRepository;
 import org.apache.catalina.User;
@@ -63,13 +64,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateUser(Long id, Users user) {
-        Users newUser=userRepository.findById(id).orElse(new Users());
-        newUser.setUsername(user.getUsername());
-        newUser.setPassword(securityConfig.passwordEncoder().encode(user.getPassword()));
-        newUser.setEmail(user.getEmail());
-        newUser.setRoles(user.getRoles());
-        userRepository.save(newUser);
+    public boolean updateUser(Long id, ProfileUpdateRequest profile) {
+        Users user=userRepository.findById(id).orElse(new Users());
+        user.setUsername(profile.getUsername());
+        user.setEmail(profile.getEmail());
+        user.setRoles(profile.getRoles());
+        userRepository.save(user);
         return true;
     }
 
@@ -82,6 +82,7 @@ public class UserServiceImpl implements UserService {
         ))
         {
             user.setPassword(securityConfig.passwordEncoder().encode(req.getNewPassword()));
+            userRepository.save(user);
             return true;
         }
         return false;

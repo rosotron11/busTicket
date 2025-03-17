@@ -31,5 +31,6 @@ public class Users {
     private List<BusEntity> buses;
 
     @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference
     private List<TicketEntity> tickets;
 }

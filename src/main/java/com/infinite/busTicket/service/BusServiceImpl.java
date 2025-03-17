@@ -1,13 +1,13 @@
 package com.infinite.busTicket.service;
 
 import com.infinite.busTicket.entity.BusEntity;
+import com.infinite.busTicket.entity.response.SearchResponse;
 import com.infinite.busTicket.repository.BusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -49,5 +49,28 @@ public class BusServiceImpl implements BusService {
         busBySource.retainAll(busByDestination);
         busBySource.retainAll(busByDOJ);
         return busBySource;
+    }
+
+    @Override
+    public List<SearchResponse> getAllLocation() {
+        List<BusEntity> buses=busRepository.findAll();
+        Set<String> locations=new HashSet<>();
+        List<SearchResponse> searchResponses= new ArrayList<>();
+        for(BusEntity bus:buses)
+        {
+            if(locations.add(bus.getSource()))
+            {
+                SearchResponse searchResponse=new SearchResponse();
+                searchResponse.setLocation(bus.getSource());
+                searchResponses.add(searchResponse);
+            }
+            if(locations.add(bus.getDestination()))
+            {
+                SearchResponse searchResponse=new SearchResponse();
+                searchResponse.setLocation(bus.getDestination());
+                searchResponses.add(searchResponse);
+            }
+        }
+        return searchResponses;
     }
 }
