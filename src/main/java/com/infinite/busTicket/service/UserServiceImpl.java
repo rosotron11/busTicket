@@ -5,12 +5,15 @@ import com.infinite.busTicket.entity.Users;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
 import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
+import com.infinite.busTicket.entity.response.UserResponse;
 import com.infinite.busTicket.repository.UserRepository;
 import org.apache.catalina.User;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +25,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private SecurityConfig securityConfig;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public boolean saveUser(RegisterRequest req) {
@@ -44,8 +50,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Users> getAll() {
-        return userRepository.findAll();
+    public List<UserResponse> getAll() {
+        List<Users> user=userRepository.findAll();
+        List<UserResponse> userResponseList=new ArrayList<>();
+        user.forEach(
+                x->{
+                    userResponseList.add(modelMapper.map(x,UserResponse.class));
+                }
+        );
+        return userResponseList;
     }
 
     @Override
@@ -54,13 +67,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Users getByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public UserResponse getByUsername(String username) {
+        Users user=userRepository.findByUsername(username);
+        return modelMapper.map(user,UserResponse.class);
     }
 
     @Override
-    public Users getById(Long id) {
-        return userRepository.findById(id).orElse(new Users());
+    public UserResponse getById(Long id) {
+        Users user=userRepository.findById(id).orElse(new Users());
+        return modelMapper.map(user, UserResponse.class);
     }
 
     @Override

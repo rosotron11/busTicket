@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface BusRepository extends JpaRepository<BusEntity,Long> {
-    List<BusEntity> findBySource(String source);
-    List<BusEntity> findByDestination(String destination);
-    List<BusEntity> findByDateOfJourney(LocalDate dateOfJourney);
+    List<BusEntity> findBySourceAndDestinationAndDateOfJourney(
+            String source, String destination, LocalDate dateOfJourney
+    );
 }

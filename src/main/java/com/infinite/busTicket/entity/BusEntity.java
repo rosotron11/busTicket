@@ -1,9 +1,6 @@
 package com.infinite.busTicket.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,15 +20,18 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class BusEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String busNumber;
 
+    //@Enumerated(EnumType.STRING)
     private String source;
+
+    //@Enumerated(EnumType.STRING)
     private String destination;
+
     private LocalTime timeOfBoarding;
     private LocalTime timeOfDropping;
     private LocalDate dateOfJourney;
@@ -41,13 +41,12 @@ public class BusEntity {
 //    private Map<String,Date> boardingPlacesandTime;
     private List<String> boardingPlaces;
     private List<String> dropOffPlaces;
-    private int seats;
 
     @ManyToOne
     @JoinColumn(name="conductor_id")
     private Users conductor;
 
     @OneToMany(mappedBy = "bus", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonBackReference
+    @JsonIgnore
     private List<TicketEntity> tickets;
 }

@@ -1,13 +1,12 @@
 package com.infinite.busTicket.controller;
 
-import com.infinite.busTicket.entity.TicketEntity;
+import com.infinite.busTicket.entity.response.TicketResponse;
 import com.infinite.busTicket.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/tickets")
@@ -23,8 +22,13 @@ public class TicketController {
         return new ResponseEntity<>(ticketService.getAllTickets(), HttpStatus.OK);
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getTicketByUserId(@PathVariable Long id){
+        return new ResponseEntity<>(ticketService.getTicketsByUserId(id), HttpStatus.OK);
+    }
+
     @PostMapping
-    public ResponseEntity<?> createTicket(@RequestBody TicketEntity ticket)
+    public ResponseEntity<?> createTicket(@RequestBody TicketResponse ticket)
     {
         ticketService.createTicket(ticket);
         return new ResponseEntity<>("Created",HttpStatus.CREATED);

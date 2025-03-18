@@ -1,9 +1,6 @@
 package com.infinite.busTicket.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,13 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Ticket")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class TicketEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,13 +36,15 @@ public class TicketEntity {
     private LocalDate dateOfJourney;
     private LocalTime boardingTime;
 
+    private String seatNo;
+
     @ManyToOne
     @JoinColumn(name="passenger_id")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Users passenger;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="bus_id")
-    @JsonManagedReference
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private BusEntity bus;
 }
