@@ -51,7 +51,7 @@ public class SecurityConfig {
                         req
                                 //.requestMatchers("/login","/h2-console/**","/register")
                                 //.permitAll()
-                                .requestMatchers("/register","/login","/api/health").permitAll()
+                                .requestMatchers("/register","/login","/check/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/bus").hasRole("conductor")
                                 .requestMatchers(HttpMethod.GET,"/bus").permitAll()

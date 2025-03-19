@@ -1,14 +1,13 @@
 package com.infinite.busTicket.service;
 
-import com.infinite.busTicket.entity.TicketEntity;
-import com.infinite.busTicket.entity.response.TicketResponse;
+import com.infinite.busTicket.entity.dto.TicketDTO;
 
 import java.util.List;
 
 public interface TicketService {
-    List<TicketResponse> getAllTickets();
-    void createTicket(TicketResponse ticket);
+    List<TicketDTO> getAllTickets();
+    void createTicket(TicketDTO ticket);
     void deleteTicket(Long id);
 
-    List<TicketResponse> getTicketsByUserId(Long id);
+    List<TicketDTO> getTicketsByUserId(Long id);
 }

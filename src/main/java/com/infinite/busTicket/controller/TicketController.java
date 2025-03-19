@@ -1,6 +1,6 @@
 package com.infinite.busTicket.controller;
 
-import com.infinite.busTicket.entity.response.TicketResponse;
+import com.infinite.busTicket.entity.dto.TicketDTO;
 import com.infinite.busTicket.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +28,7 @@ public class TicketController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createTicket(@RequestBody TicketResponse ticket)
+    public ResponseEntity<?> createTicket(@RequestBody TicketDTO ticket)
     {
         ticketService.createTicket(ticket);
         return new ResponseEntity<>("Created",HttpStatus.CREATED);

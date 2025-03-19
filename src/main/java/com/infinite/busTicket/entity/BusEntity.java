@@ -36,11 +36,17 @@ public class BusEntity {
     private LocalTime timeOfDropping;
     private LocalDate dateOfJourney;
 
-//    @JdbcTypeCode(SqlTypes.JSON)
-//    @JsonDeserialize(using = CustomDateMapDeserializer.class)
-//    private Map<String,Date> boardingPlacesandTime;
-    private List<String> boardingPlaces;
-    private List<String> dropOffPlaces;
+    @ElementCollection
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Map<String,String>> boardingPlaces;
+
+    @ElementCollection
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Map<String,String>> dropOffPlaces;
+
+    private Long seats;
+
+    private float price;
 
     @ManyToOne
     @JoinColumn(name="conductor_id")

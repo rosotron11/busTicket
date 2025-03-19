@@ -5,16 +5,13 @@ import com.infinite.busTicket.entity.Users;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
 import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
-import com.infinite.busTicket.entity.response.UserResponse;
+import com.infinite.busTicket.entity.dto.UserDTO;
 import com.infinite.busTicket.repository.UserRepository;
-import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -50,15 +47,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAll() {
+    public List<UserDTO> getAll() {
         List<Users> user=userRepository.findAll();
-        List<UserResponse> userResponseList=new ArrayList<>();
+        List<UserDTO> userDTOList =new ArrayList<>();
         user.forEach(
                 x->{
-                    userResponseList.add(modelMapper.map(x,UserResponse.class));
+                    userDTOList.add(modelMapper.map(x, UserDTO.class));
                 }
         );
-        return userResponseList;
+        return userDTOList;
     }
 
     @Override
@@ -67,15 +64,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getByUsername(String username) {
+    public UserDTO getByUsername(String username) {
         Users user=userRepository.findByUsername(username);
-        return modelMapper.map(user,UserResponse.class);
+        return modelMapper.map(user, UserDTO.class);
     }
 
     @Override
-    public UserResponse getById(Long id) {
+    public UserDTO getById(Long id) {
         Users user=userRepository.findById(id).orElse(new Users());
-        return modelMapper.map(user, UserResponse.class);
+        return modelMapper.map(user, UserDTO.class);
     }
 
     @Override

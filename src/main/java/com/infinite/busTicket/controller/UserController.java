@@ -6,8 +6,7 @@ import com.infinite.busTicket.entity.request.LoginRequest;
 import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
 import com.infinite.busTicket.entity.response.LoginResponse;
-import com.infinite.busTicket.entity.Users;
-import com.infinite.busTicket.entity.response.UserResponse;
+import com.infinite.busTicket.entity.dto.UserDTO;
 import com.infinite.busTicket.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -85,7 +84,7 @@ public class UserController {
                     )
             );
             UserDetails userDetails=userDetailsService.loadUserByUsername(request.getUsername());
-            UserResponse user=userService.getByUsername(request.getUsername());
+            UserDTO user=userService.getByUsername(request.getUsername());
             String jwt=jwtUtil.generateToken(userDetails.getUsername());
             return new ResponseEntity<>(new LoginResponse(
                     user.getId(),
@@ -110,5 +109,11 @@ public class UserController {
             return new ResponseEntity<>("Enter the correct current password", HttpStatus.OK);
         }
         return new ResponseEntity<>("ID Mismatch", HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/check/{jwt}")
+    public ResponseEntity<?> check(@PathVariable String jwt)
+    {
+        return new ResponseEntity<>(jwtUtil.validToken(jwt),HttpStatus.OK);
     }
 }

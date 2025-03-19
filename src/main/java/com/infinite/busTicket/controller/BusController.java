@@ -1,12 +1,10 @@
 package com.infinite.busTicket.controller;
 
-import com.infinite.busTicket.entity.BusEntity;
-import com.infinite.busTicket.entity.response.BusListResponse;
+import com.infinite.busTicket.entity.dto.BusDTO;
 import com.infinite.busTicket.service.BusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -26,7 +24,7 @@ public class BusController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createBus(@RequestBody BusListResponse bus)
+    public ResponseEntity<?> createBus(@RequestBody BusDTO bus)
     {
         if(bus.getTimeOfDropping().isBefore(bus.getTimeOfBoarding()))
         {
@@ -37,7 +35,7 @@ public class BusController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBus(@PathVariable Long id,@RequestBody BusListResponse bus)
+    public ResponseEntity<?> updateBus(@PathVariable Long id,@RequestBody BusDTO bus)
     {
         busService.updateBus(id,bus);
         return new ResponseEntity<>("Updated",HttpStatus.OK);
@@ -81,5 +79,11 @@ public class BusController {
     public ResponseEntity<?> getTicketsFromBus(@PathVariable Long id)
     {
         return new ResponseEntity<>(busService.getTicketsFromBus(id),HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/seats")
+    public ResponseEntity<?> getSeatsFromBusId(@PathVariable Long id)
+    {
+        return new ResponseEntity<>(busService.getSeatsFromBusId(id),HttpStatus.OK);
     }
 }

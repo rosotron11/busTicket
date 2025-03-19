@@ -28,7 +28,7 @@ public class Users {
     @JsonIgnore
     private List<BusEntity> buses;
 
-    @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "bookingUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<TicketEntity> tickets;
 }

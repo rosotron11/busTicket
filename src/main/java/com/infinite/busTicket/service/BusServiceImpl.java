@@ -1,14 +1,12 @@
 package com.infinite.busTicket.service;
 
 import com.infinite.busTicket.entity.BusEntity;
-import com.infinite.busTicket.entity.Districts;
 import com.infinite.busTicket.entity.TicketEntity;
 import com.infinite.busTicket.entity.Users;
-import com.infinite.busTicket.entity.response.BusListResponse;
+import com.infinite.busTicket.entity.dto.BusDTO;
 import com.infinite.busTicket.entity.response.SearchResponse;
-import com.infinite.busTicket.entity.response.TicketResponse;
+import com.infinite.busTicket.entity.dto.TicketDTO;
 import com.infinite.busTicket.repository.BusRepository;
-import com.infinite.busTicket.repository.TicketRepository;
 import com.infinite.busTicket.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -31,21 +30,21 @@ public class BusServiceImpl implements BusService {
     private ModelMapper modelMapper;
 
     @Override
-    public List<BusListResponse> getAllBus() {
-        List<BusListResponse> busListResponses=new ArrayList<>();
+    public List<BusDTO> getAllBus() {
+        List<BusDTO> busListRespons =new ArrayList<>();
         busRepository.findAll().forEach(x->{
-            busListResponses.add(modelMapper.map(x, BusListResponse.class));
+            busListRespons.add(modelMapper.map(x, BusDTO.class));
         });
-        return busListResponses;
+        return busListRespons;
     }
 
     @Override
-    public void createBus(BusListResponse bus) {
+    public void createBus(BusDTO bus) {
         busRepository.save(modelMapper.map(bus,BusEntity.class));
     }
 
     @Override
-    public void updateBus(Long id, BusListResponse bus) {
+    public void updateBus(Long id, BusDTO bus) {
         busRepository.save(modelMapper.map(bus,BusEntity.class));
     }
 
@@ -55,22 +54,22 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public BusListResponse getById(Long id)
+    public BusDTO getById(Long id)
     {
         return modelMapper.map(busRepository.findById(id).orElse(new BusEntity()),
-                BusListResponse.class);
+                BusDTO.class);
     }
 
     @Override
-    public List<BusListResponse> searchBus(String source, String destination, LocalDate doj) {
+    public List<BusDTO> searchBus(String source, String destination, LocalDate doj) {
         List<BusEntity> buses=busRepository.findBySourceAndDestinationAndDateOfJourney(
                 source,destination,doj
         );
-        List<BusListResponse> busListResponses=new ArrayList<>();
+        List<BusDTO> busListRespons =new ArrayList<>();
         buses.forEach(x->{
-            busListResponses.add(modelMapper.map(x,BusListResponse.class));
+            busListRespons.add(modelMapper.map(x, BusDTO.class));
         });
-        return busListResponses;
+        return busListRespons;
     }
 
     @Override
@@ -97,23 +96,45 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public List<BusListResponse> getBusByUserId(Long id) {
+    public List<BusDTO> getBusByUserId(Long id) {
         Users user=userRepository.findById(id).orElse(new Users());
-        List<BusListResponse> busListResponses=new ArrayList<>();
+        List<BusDTO> busListRespons =new ArrayList<>();
         user.getBuses().forEach(x->
         {
-            busListResponses.add(modelMapper.map(x, BusListResponse.class));
+            busListRespons.add(modelMapper.map(x, BusDTO.class));
         });
-        return busListResponses;
+        return busListRespons;
     }
 
     @Override
-    public List<TicketResponse> getTicketsFromBus(Long id) {
+    public List<TicketDTO> getTicketsFromBus(Long id) {
         BusEntity bus=busRepository.findById(id).orElse(new BusEntity());
-        List<TicketResponse> tickets= new ArrayList<>();
+        List<TicketDTO> tickets= new ArrayList<>();
         bus.getTickets().forEach(x->{
-            tickets.add(modelMapper.map(x,TicketResponse.class));
+            tickets.add(modelMapper.map(x, TicketDTO.class));
         });
         return tickets;
+    }
+
+    @Override
+    public List<Integer> getSeatsFromBusId(Long id) {
+        final int[] count = {1};
+        BusEntity bus = busRepository.findById(id).orElse(new BusEntity());
+        List<TicketEntity> tickets = bus.getTickets();
+        List<Integer> seats = new ArrayList<>();
+
+        tickets.forEach(x -> {
+            x.getPassengers().forEach(y -> {
+                Collection<String> seatsNo = y.values();
+                seatsNo.forEach(v -> {
+                    if (count[0] % 2 == 0) {
+                        seats.add(Integer.valueOf(v));
+                    }
+                    count[0]++;
+                });
+            });
+        });
+
+        return seats;
     }
 }
