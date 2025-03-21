@@ -40,6 +40,9 @@ public class DashboardServiceImpl implements DashboardService{
         final Long[] totalPassenger = {Long.valueOf(0)};
         final Duration[] totalTime = {Duration.ZERO};
         final Float[] totalAmount = {Float.valueOf(0)};
+        Float avPassengerPerBus=0f;
+        Duration avJourneyTime=Duration.ZERO;
+        Float averageAmount=0f;
         Set<String> vendors=new HashSet<>();
         buses[0].forEach(x->{
             if(x.getDateOfJourney().isEqual(selectedDate))
@@ -55,9 +58,12 @@ public class DashboardServiceImpl implements DashboardService{
                 ));
             }
         });
-        Float avPassengerPerBus=((float)totalPassenger[0])/((float)totalBus[0]);
-        Duration avJourneyTime=totalTime[0].dividedBy(totalBus[0]);
-        Float averageAmount=totalAmount[0]/((float)totalBus[0]);
+        if(totalBus[0]>0)
+        {
+            avPassengerPerBus=((float)totalPassenger[0])/((float)totalBus[0]);
+            avJourneyTime=totalTime[0].dividedBy(totalBus[0]);
+            averageAmount=totalAmount[0]/((float)totalBus[0]);
+        }
         dailyBusStats.setAverageAmount(averageAmount);
         dailyBusStats.setAvJourneyTime(avJourneyTime);
         dailyBusStats.setAvPassengerPerBus(avPassengerPerBus);
@@ -235,6 +241,7 @@ public class DashboardServiceImpl implements DashboardService{
         Long totalPassengers = 0L;
         Float avPassengerPerBus=0f;
         Duration totalTime=Duration.ZERO;
+        Duration avJourneyTime=Duration.ZERO;
         Float totalAmount = 0f;
         Float averageAmount=0f;
         for(BusEntity bus:buses)
@@ -252,10 +259,13 @@ public class DashboardServiceImpl implements DashboardService{
                 totalBus+=1;
             }
         }
+        if(totalBus>0)
+        {
+            averageAmount=totalAmount/totalBus;
+            avPassengerPerBus= (float) (totalPassengers/totalBus);
+            avJourneyTime=totalTime.dividedBy(totalBus);
+        }
         totalVendor= (long) vendors.size();
-        averageAmount=totalAmount/totalBus;
-        avPassengerPerBus= (float) (totalPassengers/totalBus);
-        Duration avJourneyTime=totalTime.dividedBy(totalBus);
         dailyBusStats.setTotalBus(totalBus);
         dailyBusStats.setTotalAmount(totalAmount);
         dailyBusStats.setTotalVendor(totalVendor);
