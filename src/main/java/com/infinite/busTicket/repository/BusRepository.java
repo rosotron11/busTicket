@@ -13,4 +13,5 @@ public interface BusRepository extends JpaRepository<BusEntity,Long> {
     List<BusEntity> findBySourceAndDestinationAndDateOfJourney(
             String source, String destination, LocalDate dateOfJourney
     );
+    List<BusEntity> findByBusNumber(String busNumber);
 }

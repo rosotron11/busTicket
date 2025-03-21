@@ -10,4 +10,6 @@ public interface TicketService {
     void deleteTicket(Long id);
 
     List<TicketDTO> getTicketsByUserId(Long id);
+
+    void completePayment(String id);
 }

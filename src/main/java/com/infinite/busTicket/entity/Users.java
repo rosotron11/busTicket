@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Generated;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,8 @@ public class Users {
     private String password;
     private String email;
     private String roles;
+
+    private LocalDateTime registeredOn;
 
     @OneToMany(mappedBy = "conductor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

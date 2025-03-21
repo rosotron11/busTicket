@@ -21,4 +21,6 @@ public interface UserService {
     boolean updateUser(Long id, ProfileUpdateRequest profile);
 
     boolean changePassword(Long id, ChangePasswordRequest req);
+
+    UserDTO getByEmail(String email);
 }

@@ -9,8 +9,7 @@ import java.util.List;
 
 public interface BusService {
     List<BusDTO> getAllBus();
-    void createBus(BusDTO bus);
-    void updateBus(Long id, BusDTO bus);
+    String createBus(BusDTO bus);
     BusDTO getById(Long id);
     void deleteBus(Long id);
     List<BusDTO> searchBus(String source, String destination, LocalDate doj);

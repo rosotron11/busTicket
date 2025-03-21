@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,9 @@ import java.util.Map;
 @NoArgsConstructor
 public class BusDTO {
     private Long id;
+    private LocalDateTime createdOn;
     private String busNumber;
+    private String vendorName;
     private String source;
     private String destination;
     private LocalTime timeOfBoarding;
@@ -23,7 +26,8 @@ public class BusDTO {
     private LocalDate dateOfJourney;
     private List<Map<String,String>> boardingPlaces;
     private List<Map<String,String>> dropOffPlaces;
-    private int seats;
+    private int bookedSeats;
+    private int totalSeats;
     private UserDTO conductor;
     private float price;
 

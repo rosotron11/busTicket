@@ -11,6 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
                 user.setPassword(securityConfig.passwordEncoder().encode(req.getPassword()));
                 user.setRoles(req.getRoles());
                 user.setEmail(req.getEmail());
+                user.setRegisteredOn(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
                 userRepository.save(user);
                 return true;
             }
@@ -60,7 +63,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+        Users user=userRepository.findById(id).orElse(new Users());
+        if(!user.getRoles().equals("admin")) {
+            userRepository.deleteById(id);
+        }
     }
 
     @Override
@@ -77,12 +83,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean updateUser(Long id, ProfileUpdateRequest profile) {
-        Users user=userRepository.findById(id).orElse(new Users());
-        user.setUsername(profile.getUsername());
-        user.setEmail(profile.getEmail());
-        user.setRoles(profile.getRoles());
-        userRepository.save(user);
-        return true;
+        Users user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return false;
+        }
+
+        boolean usernameExists = userRepository.existsByUsername(profile.getUsername()) && !user.getUsername().equals(profile.getUsername());
+        boolean emailExists = userRepository.existsByEmail(profile.getEmail()) && !user.getEmail().equals(profile.getEmail());
+
+        if (!usernameExists && !emailExists) {
+            user.setUsername(profile.getUsername());
+            user.setEmail(profile.getEmail());
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -98,5 +113,11 @@ public class UserServiceImpl implements UserService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public UserDTO getByEmail(String email) {
+        Users user=userRepository.findByEmail(email);
+        return modelMapper.map(user,UserDTO.class);
     }
 }

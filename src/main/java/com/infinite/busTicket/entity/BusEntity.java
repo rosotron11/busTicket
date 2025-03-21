@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,9 @@ public class BusEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String busNumber;
+    private String vendorName;
+
+    private LocalDateTime createdOn;
 
     //@Enumerated(EnumType.STRING)
     private String source;
@@ -35,6 +39,8 @@ public class BusEntity {
     private LocalTime timeOfBoarding;
     private LocalTime timeOfDropping;
     private LocalDate dateOfJourney;
+    private int bookedSeats;
+    private int totalSeats;
 
     @ElementCollection
     @JdbcTypeCode(SqlTypes.JSON)
@@ -43,8 +49,6 @@ public class BusEntity {
     @ElementCollection
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Map<String,String>> dropOffPlaces;
-
-    private Long seats;
 
     private float price;
 

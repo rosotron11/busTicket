@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProfileUpdateRequest {
     private Long id;
-    private String roles;
     private String username;
     private String email;
 }

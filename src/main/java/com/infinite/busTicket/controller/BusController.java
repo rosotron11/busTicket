@@ -24,21 +24,16 @@ public class BusController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createBus(@RequestBody BusDTO bus)
-    {
-        if(bus.getTimeOfDropping().isBefore(bus.getTimeOfBoarding()))
-        {
-            return new ResponseEntity<>("Drop before Board",HttpStatus.CREATED);
+    public ResponseEntity<?> createBus(@RequestBody BusDTO bus) {
+        if (bus.getTimeOfDropping().isBefore(bus.getTimeOfBoarding())) {
+            return new ResponseEntity<>("Drop before Board", HttpStatus.CREATED);
         }
-        busService.createBus(bus);
-        return new ResponseEntity<>("Created",HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateBus(@PathVariable Long id,@RequestBody BusDTO bus)
-    {
-        busService.updateBus(id,bus);
-        return new ResponseEntity<>("Updated",HttpStatus.OK);
+        String message = busService.createBus(bus);
+        if (message.equals("Created")) {
+            return new ResponseEntity<>("Created", HttpStatus.CREATED);
+        } else{
+            return new ResponseEntity<>(message,HttpStatus.CONFLICT);
+        }
     }
 
     @GetMapping("/{id}")

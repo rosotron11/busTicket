@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,10 @@ public class TicketDTO {
     private String destination;
     private LocalDate dateOfJourney;
     private LocalTime boardingTime;
+    private LocalTime droppingTime;
     private List<Map<String,String>> passengers;
+    private LocalDateTime bookingTime;
+    private LocalDateTime paymentTime;
     private String email;
     private String amount;
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

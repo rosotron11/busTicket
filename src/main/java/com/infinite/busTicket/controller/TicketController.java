@@ -40,4 +40,11 @@ public class TicketController {
         ticketService.deleteTicket(id);
         return new ResponseEntity<>("Deleted",HttpStatus.OK);
     }
+
+    @PutMapping("/pay")
+    public  ResponseEntity<?> completePayment(@RequestBody String id)
+    {
+        ticketService.completePayment(id);
+        return new ResponseEntity<>("Payment Completed",HttpStatus.OK);
+    }
 }

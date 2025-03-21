@@ -13,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -39,13 +42,45 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public void createBus(BusDTO bus) {
-        busRepository.save(modelMapper.map(bus,BusEntity.class));
-    }
+    public String createBus(BusDTO bus) {
+        List<BusEntity> busEntity=busRepository.findByBusNumber(bus.getBusNumber());
+        boolean unique=true;
+        for (BusEntity x : busEntity) {
+            if (x.getDateOfJourney().equals(bus.getDateOfJourney())
+                    && x.getTimeOfDropping().isAfter(bus.getTimeOfBoarding())) {
+                unique = false;
+                break;
+            }
+        }
+        if(!unique)
+        {
+            return "Bus is still on route during time of boarding";
+        }
 
-    @Override
-    public void updateBus(Long id, BusDTO bus) {
+        for (Map<String, String> place : bus.getBoardingPlaces()) {
+            for (Map.Entry<String, String> entry : place.entrySet()) {
+                LocalTime boardingTime = LocalTime.parse(entry.getValue());
+                if (boardingTime.isBefore(bus.getTimeOfBoarding()) || boardingTime.isAfter(bus.getTimeOfDropping())
+                        || Duration.between(bus.getTimeOfBoarding(), boardingTime).toHours() > 2) {
+                    return "Invalid boarding time in boarding places";
+                }
+            }
+        }
+
+        for (Map<String, String> place : bus.getDropOffPlaces()) {
+            for (Map.Entry<String, String> entry : place.entrySet()) {
+                LocalTime droppingTime = LocalTime.parse(entry.getValue());
+                if (droppingTime.isAfter(bus.getTimeOfDropping()) || droppingTime.isBefore(bus.getTimeOfBoarding())
+                        || Duration.between(droppingTime, bus.getTimeOfDropping()).toHours() > 2) {
+                    return "Invalid dropping time in drop off places";
+                }
+            }
+        }
+
+        bus.setCreatedOn(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES));
+        bus.setBookedSeats(0);
         busRepository.save(modelMapper.map(bus,BusEntity.class));
+        return "Created";
     }
 
     @Override

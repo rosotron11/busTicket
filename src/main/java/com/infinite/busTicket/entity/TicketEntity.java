@@ -12,6 +12,7 @@ import org.hibernate.type.SqlTypes;
 import org.modelmapper.ModelMapper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +49,10 @@ public class TicketEntity {
     private String destination;
     private LocalDate dateOfJourney;
     private LocalTime boardingTime;
+    private LocalTime droppingTime;
+
+    private LocalDateTime bookingTime;
+    private LocalDateTime paymentTime;
 
     @ManyToOne
     @JoinColumn(name="passenger_id")

@@ -7,12 +7,15 @@ import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
 import com.infinite.busTicket.entity.request.RegisterRequest;
 import com.infinite.busTicket.entity.response.LoginResponse;
 import com.infinite.busTicket.entity.dto.UserDTO;
+import com.infinite.busTicket.repository.UserRepository;
 import com.infinite.busTicket.service.UserService;
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +42,7 @@ public class UserController {
         boolean registerCheck= userService.saveUser(request);
         if(registerCheck) {
             LoginRequest res = new LoginRequest(request.getUsername(),
-                    request.getPassword(),
-                    request.getEmail());
+                    request.getPassword());
             return new ResponseEntity<>(login(res), HttpStatus.OK);
         }
         return new ResponseEntity<>("Username or email exists",HttpStatus.OK);
@@ -62,8 +64,14 @@ public class UserController {
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody ProfileUpdateRequest profile)
     {
-        userService.updateUser(id,profile);
-        return new ResponseEntity<>("Updated", HttpStatus.OK);
+        if(userService.updateUser(id,profile))
+        {
+            return new ResponseEntity<>("Updated",HttpStatus.OK);
+        }
+        else
+        {
+            return new ResponseEntity<>("Username or Email Already Exists", HttpStatus.OK);
+        }
     }
 
     @GetMapping("/users/{id}")
@@ -79,12 +87,20 @@ public class UserController {
         {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getUsername(),
+                            request.getUsernameOrEmail(),
                             request.getPassword()
                     )
             );
-            UserDetails userDetails=userDetailsService.loadUserByUsername(request.getUsername());
-            UserDTO user=userService.getByUsername(request.getUsername());
+            UserDetails userDetails=userDetailsService.loadUserByUsername(request.getUsernameOrEmail());
+            UserDTO user=new UserDTO();
+            if(request.getUsernameOrEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
+            {
+                user=userService.getByEmail(request.getUsernameOrEmail());
+            }
+            else
+            {
+                user=userService.getByUsername(request.getUsernameOrEmail());
+            }
             String jwt=jwtUtil.generateToken(userDetails.getUsername());
             return new ResponseEntity<>(new LoginResponse(
                     user.getId(),
