@@ -49,8 +49,6 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests((req)->
                         req
-                                //.requestMatchers("/login","/h2-console/**","/register")
-                                //.permitAll()
                                 .requestMatchers("/register","/login","/check/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/bus").hasRole("conductor")
@@ -58,6 +56,10 @@ public class SecurityConfig {
                                 .requestMatchers("/bus/location").permitAll()
                                 .requestMatchers(HttpMethod.DELETE,"/tickets").hasRole("conductor")
                                 .requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("admin")
+                                .requestMatchers("/dashboard/total-stats",
+                                        "/dashboard/daily-ticket-stats/{date}",
+                                        "/dashboard/daily-bus-stats/{date}").hasRole("admin")
+                                .requestMatchers("/dashboard/{id}/**").hasRole("conductor")
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

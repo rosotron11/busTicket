@@ -31,7 +31,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
             return User.builder()
                     .username(user.getUsername())
                     .password(user.getPassword())
-                    .roles(user.getRoles())
+                    .roles(String.valueOf(user.getRoles()))
                     .build();
         }
         throw new UsernameNotFoundException("User with username: "+username+" not found");

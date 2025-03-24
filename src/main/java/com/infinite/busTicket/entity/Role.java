@@ -1,6 +1,7 @@
 package com.infinite.busTicket.entity;
 
-public enum role {
+public enum Role {
     passenger,
-    conductor
+    conductor,
+    ADMIN
 }

@@ -1,6 +1,7 @@
 package com.infinite.busTicket.service;
 
 import com.infinite.busTicket.config.SecurityConfig;
+import com.infinite.busTicket.entity.Role;
 import com.infinite.busTicket.entity.Users;
 import com.infinite.busTicket.entity.request.ChangePasswordRequest;
 import com.infinite.busTicket.entity.request.ProfileUpdateRequest;
