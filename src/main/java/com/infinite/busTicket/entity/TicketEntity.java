@@ -17,6 +17,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @Entity
 @Table(name = "Ticket")
@@ -28,13 +29,16 @@ public class TicketEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Transient
+    @Column(unique = true)
     private String ticketNumber;
 
-    @PostLoad
-    @PostPersist
+    @PrePersist
     public void generateTicketNumber() {
-        this.ticketNumber = String.format("T%03d", this.id);
+        if (this.ticketNumber == null) {
+            Random random = new Random();
+            int randomNumber = random.nextInt(1000);
+            this.ticketNumber = String.format("T%03d", randomNumber);
+        }
     }
 
     @ElementCollection

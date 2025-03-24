@@ -58,22 +58,31 @@ public class BusServiceImpl implements BusService {
         }
 
         for (Map<String, String> place : bus.getBoardingPlaces()) {
+            int count=1;
             for (Map.Entry<String, String> entry : place.entrySet()) {
-                LocalTime boardingTime = LocalTime.parse(entry.getValue());
-                if (boardingTime.isBefore(bus.getTimeOfBoarding()) || boardingTime.isAfter(bus.getTimeOfDropping())
-                        || Duration.between(bus.getTimeOfBoarding(), boardingTime).toHours() > 2) {
-                    return "Invalid boarding time in boarding places";
+                if (count % 2 == 0)
+                {
+                    LocalTime boardingTime = LocalTime.parse(entry.getValue());
+                    if (boardingTime.isBefore(bus.getTimeOfBoarding()) || boardingTime.isAfter(bus.getTimeOfDropping())
+                            || Duration.between(bus.getTimeOfBoarding(), boardingTime).toHours() > 2) {
+                        return "Invalid boarding time in boarding places";
+                    }
                 }
+                count++;
             }
         }
 
         for (Map<String, String> place : bus.getDropOffPlaces()) {
+            int count=1;
             for (Map.Entry<String, String> entry : place.entrySet()) {
-                LocalTime droppingTime = LocalTime.parse(entry.getValue());
-                if (droppingTime.isAfter(bus.getTimeOfDropping()) || droppingTime.isBefore(bus.getTimeOfBoarding())
-                        || Duration.between(droppingTime, bus.getTimeOfDropping()).toHours() > 2) {
-                    return "Invalid dropping time in drop off places";
+                if(count%2==0){
+                    LocalTime droppingTime = LocalTime.parse(entry.getValue());
+                    if (droppingTime.isAfter(bus.getTimeOfDropping()) || droppingTime.isBefore(bus.getTimeOfBoarding())
+                            || Duration.between(droppingTime, bus.getTimeOfDropping()).toHours() > 2) {
+                        return "Invalid dropping time in drop off places";
+                    }
                 }
+                count++;
             }
         }
 

@@ -12,16 +12,16 @@ import com.infinite.busTicket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.awt.datatransfer.FlavorEvent;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
-public class DashboardServiceImpl implements DashboardService{
+public class DashboardServiceImpl implements DashboardService {
     @Autowired
     private TicketRepository ticketRepository;
 
@@ -33,247 +33,293 @@ public class DashboardServiceImpl implements DashboardService{
 
     @Override
     public DailyBusStats getDailyBusStats(String date) {
-        LocalDate selectedDate=LocalDate.parse(date);
-        DailyBusStats dailyBusStats=new DailyBusStats();
-        final List<BusEntity>[] buses = new List[]{busRepository.findAll()};
-        final Long[] totalBus = {Long.valueOf(0)};
-        final Long[] totalPassenger = {Long.valueOf(0)};
-        final Duration[] totalTime = {Duration.ZERO};
-        final Float[] totalAmount = {Float.valueOf(0)};
-        Float avPassengerPerBus=0f;
-        Duration avJourneyTime=Duration.ZERO;
-        Float averageAmount=0f;
-        Set<String> vendors=new HashSet<>();
-        buses[0].forEach(x->{
-            if(x.getDateOfJourney().isEqual(selectedDate))
-            {
-                totalBus[0] +=1;
-                vendors.add(x.getVendorName());
-                x.getTickets().forEach(y->{
-                    totalPassenger[0] +=y.getPassengers().size();
-                    totalAmount[0] +=y.getAmount();
-                });
-                totalTime[0] = totalTime[0].plus(Duration.between(
-                        x.getTimeOfDropping(),x.getTimeOfBoarding()
-                ));
-            }
-        });
-        if(totalBus[0]>0)
-        {
-            avPassengerPerBus=((float)totalPassenger[0])/((float)totalBus[0]);
-            avJourneyTime=totalTime[0].dividedBy(totalBus[0]);
-            averageAmount=totalAmount[0]/((float)totalBus[0]);
+        LocalDate selectedDate = LocalDate.parse(date);
+
+        // Filter bus
+        List<BusEntity> filteredBuses = busRepository.findAll().stream()
+                .filter(bus -> bus.getDateOfJourney().isEqual(selectedDate))
+                .toList();
+
+        DailyBusStats stats = new DailyBusStats();
+        if (filteredBuses.isEmpty()) {
+            return stats;
         }
-        dailyBusStats.setAverageAmount(averageAmount);
-        dailyBusStats.setAvJourneyTime(avJourneyTime);
-        dailyBusStats.setAvPassengerPerBus(avPassengerPerBus);
-        dailyBusStats.setTotalBus(totalBus[0]);
-        dailyBusStats.setTotalVendor((long) vendors.size());
-        dailyBusStats.setTotalPassengers(totalPassenger[0]);
-        dailyBusStats.setTotalTime(totalTime[0]);
-        dailyBusStats.setTotalAmount(totalAmount[0]);
-        return dailyBusStats;
+
+        Set<String> vendors = filteredBuses.stream()
+                .map(BusEntity::getVendorName)
+                .collect(Collectors.toSet());
+
+        long totalPassengers = 0;
+        float totalAmount = 0;
+        Duration totalDuration = Duration.ZERO;
+
+        for (BusEntity bus : filteredBuses) {
+            for (TicketEntity ticket : bus.getTickets()) {
+                totalPassengers += ticket.getPassengers().size();
+                totalAmount += ticket.getAmount();
+            }
+            totalDuration = totalDuration.plus(Duration.between(
+                    bus.getTimeOfDropping(), bus.getTimeOfBoarding()));
+        }
+
+        stats.setTotalBus((long) filteredBuses.size());
+        stats.setTotalVendor((long) vendors.size());
+        stats.setTotalPassengers(totalPassengers);
+        stats.setTotalAmount(totalAmount);
+        stats.setTotalTime(totalDuration);
+
+        stats.setAvPassengerPerBus((float) totalPassengers / filteredBuses.size());
+        stats.setAvJourneyTime(totalDuration.dividedBy(filteredBuses.size()));
+        stats.setAverageAmount(totalAmount / filteredBuses.size());
+
+        return stats;
     }
 
     @Override
     public DailyTicketStats getDailyTicketStats(String date) {
-        DailyTicketStats dailyTicketStats=new DailyTicketStats();
-        final Float[] amount = {Float.valueOf(0)};
-        LocalDate localDate=LocalDate.parse(date);
-        List<TicketEntity> tickets=ticketRepository.findAll();
-        final Long[] bookedTickets = {Long.valueOf(0)};
-        final Long[] totalDailyTickets = {Long.valueOf(0)};
-        final Long[] paidTickets = {Long.valueOf(0)};
-        tickets.forEach(x->{
-            if(x.getBookingTime().toLocalDate().isEqual(localDate)) {
-                amount[0] +=x.getAmount();
-                if (x.getPaymentTime() == null && x.getBookingTime() != null) {
-                    bookedTickets[0] += 1;
-                } else {
-                    paidTickets[0] += 1;
-                }
-                totalDailyTickets[0] += 1;
+        LocalDate localDate = LocalDate.parse(date);
+
+        // Filter tickets for the selected date
+        List<TicketEntity> filteredTickets = ticketRepository.findAll().stream()
+                .filter(ticket -> ticket.getBookingTime().toLocalDate().isEqual(localDate))
+                .toList();
+
+        DailyTicketStats stats = new DailyTicketStats();
+        if (filteredTickets.isEmpty()) {
+            return stats;
+        }
+
+        long bookedTickets = 0;
+        long paidTickets = 0;
+        float totalAmount = 0;
+
+        for (TicketEntity ticket : filteredTickets) {
+            if (ticket.getPaymentTime() == null && ticket.getBookingTime() != null) {
+                bookedTickets++;
+            } else {
+                paidTickets++;
             }
-        });
-        dailyTicketStats.setTotalTicket(totalDailyTickets[0]);
-        dailyTicketStats.setBookedTicket(bookedTickets[0]);
-        dailyTicketStats.setPaidTicket(paidTickets[0]);
-        dailyTicketStats.setTotalAmount(amount[0]);
-        dailyTicketStats.setAverageAmount(amount[0]/paidTickets[0]);
-        return dailyTicketStats;
+            totalAmount += ticket.getAmount();
+        }
+
+        stats.setTotalTicket((long) filteredTickets.size());
+        stats.setBookedTicket(bookedTickets);
+        stats.setPaidTicket(paidTickets);
+        stats.setTotalAmount(totalAmount);
+
+        if (paidTickets > 0) {
+            stats.setAverageAmount(totalAmount / paidTickets);
+        } else {
+            stats.setAverageAmount(0f);
+        }
+
+        return stats;
     }
 
     @Override
     public AllTimeStats getStats() {
-        AllTimeStats allTimeStats=new AllTimeStats();
-        List<TicketEntity> tickets=ticketRepository.findAll();
-        final Long[] bookedTickets = {Long.valueOf(0)};
-        final Long[] paidTickets = {Long.valueOf(0)};
-        final Long[] passenger = {Long.valueOf(0)};
-        Set<String> vendors=new HashSet<>();
-        tickets.forEach(x->{
-            if(x.getPaymentTime()==null && x.getBookingTime()!=null)
-            {
-                bookedTickets[0] +=1;
+        List<TicketEntity> tickets = ticketRepository.findAll();
+        List<BusEntity> buses = busRepository.findAll();
+
+        AllTimeStats stats = new AllTimeStats();
+
+        if (tickets.isEmpty() && buses.isEmpty()) {
+            return stats;
+        }
+
+        long bookedTickets = 0;
+        long paidTickets = 0;
+        long totalPassengers = 0;
+        float totalAmount = 0;
+
+        for (TicketEntity ticket : tickets) {
+            if (ticket.getPaymentTime() == null && ticket.getBookingTime() != null) {
+                bookedTickets++;
+            } else {
+                paidTickets++;
             }
-            else {
-                paidTickets[0] +=1;
-            }
-            passenger[0] +=x.getPassengers().size();
-        });
-        List<BusEntity> buses=busRepository.findAll();
-        buses.forEach(x->
-                vendors.add(x.getVendorName()));
-        final Float[] totalAmount = {Float.valueOf(0)};
-        tickets.forEach(x->{
-            totalAmount[0] +=x.getAmount();
-        });
-        allTimeStats.setTotalBus((long) buses.size());
-        allTimeStats.setTotalAmount(totalAmount[0]);
-        allTimeStats.setPaidTicket(paidTickets[0]);
-        allTimeStats.setTotalTicket((long) tickets.size());
-        allTimeStats.setBookedTicket(bookedTickets[0]);
-        allTimeStats.setTotalPassenger(passenger[0]);
-        allTimeStats.setAverageAmountPerBus(totalAmount[0]/buses.size());
-        allTimeStats.setAverageAmountPerTicket(totalAmount[0]/paidTickets[0]);
-        allTimeStats.setTotalVendor((long) vendors.size());
-        return allTimeStats;
+            totalPassengers += ticket.getPassengers().size();
+            totalAmount += ticket.getAmount();
+        }
+
+        Set<String> vendors = buses.stream()
+                .map(BusEntity::getVendorName)
+                .collect(Collectors.toSet());
+
+        stats.setTotalBus((long) buses.size());
+        stats.setTotalTicket((long) tickets.size());
+        stats.setBookedTicket(bookedTickets);
+        stats.setPaidTicket(paidTickets);
+        stats.setTotalPassenger(totalPassengers);
+        stats.setTotalAmount(totalAmount);
+        stats.setTotalVendor((long) vendors.size());
+
+        if (!buses.isEmpty()) {
+            stats.setAverageAmountPerBus(totalAmount / buses.size());
+        }
+
+        if (paidTickets > 0) {
+            stats.setAverageAmountPerTicket(totalAmount / paidTickets);
+        }
+
+        return stats;
     }
 
     @Override
     public AllTimeStats getStatsByConductorId(Long id) {
-        AllTimeStats allTimeStats=new AllTimeStats();
-        Users user=userRepository.findById(id).orElse(new Users());
-        List<BusEntity> buses=user.getBuses();
-        Set<String> vendors=new HashSet<>();
-        Long totalBus=(long) buses.size();
-        Long totalVendor;
-        Long totalPassenger = 0L;
-        Long totalTicket = 0L;
-        Long bookedTicket=0l;
-        Long paidTicket=0l;
-        Float totalAmount=0f;
-        Float averageAmountPerTicket;
-        Float averageAmountPerBus;
-        for(BusEntity bus:buses)
-        {
-            List<TicketEntity> tickets=bus.getTickets();
-            totalTicket+=tickets.size();
-            vendors.add(bus.getVendorName());
-            for(TicketEntity ticket:tickets)
-            {
-                if(ticket.getPaymentTime()==null && ticket.getBookingTime()!=null)
-                {
-                    bookedTicket+=1;
+        Optional<Users> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            return new AllTimeStats();
+        }
+
+        List<BusEntity> buses = userOptional.get().getBuses();
+        if (buses.isEmpty()) {
+            return new AllTimeStats();
+        }
+
+        // Collect unique vendors
+        Set<String> vendors = buses.stream()
+                .map(BusEntity::getVendorName)
+                .collect(Collectors.toSet());
+
+        long totalTickets = 0;
+        long bookedTickets = 0;
+        long paidTickets = 0;
+        long totalPassengers = 0;
+        float totalAmount = 0;
+
+        for (BusEntity bus : buses) {
+            List<TicketEntity> tickets = bus.getTickets();
+            totalTickets += tickets.size();
+
+            for (TicketEntity ticket : tickets) {
+                if (ticket.getPaymentTime() == null && ticket.getBookingTime() != null) {
+                    bookedTickets++;
+                } else {
+                    paidTickets++;
                 }
-                else
-                {
-                    paidTicket+=1;
-                }
-                totalPassenger+=ticket.getPassengers().size();
-                totalAmount+=ticket.getAmount();
+                totalPassengers += ticket.getPassengers().size();
+                totalAmount += ticket.getAmount();
             }
         }
-        totalVendor= (long) vendors.size();
-        averageAmountPerBus=totalAmount/totalBus;
-        averageAmountPerTicket=totalAmount/totalTicket;
-        allTimeStats.setTotalTicket(totalTicket);
-        allTimeStats.setTotalPassenger(totalPassenger);
-        allTimeStats.setTotalBus(totalBus);
-        allTimeStats.setTotalAmount(totalAmount);
-        allTimeStats.setPaidTicket(paidTicket);
-        allTimeStats.setBookedTicket(bookedTicket);
-        allTimeStats.setTotalVendor(totalVendor);
-        allTimeStats.setAverageAmountPerTicket(averageAmountPerTicket);
-        allTimeStats.setAverageAmountPerBus(averageAmountPerBus);
-        return allTimeStats;
+
+        AllTimeStats stats = new AllTimeStats();
+        stats.setTotalBus((long) buses.size());
+        stats.setTotalTicket(totalTickets);
+        stats.setBookedTicket(bookedTickets);
+        stats.setPaidTicket(paidTickets);
+        stats.setTotalPassenger(totalPassengers);
+        stats.setTotalAmount(totalAmount);
+        stats.setTotalVendor((long) vendors.size());
+
+        if (!buses.isEmpty()) {
+            stats.setAverageAmountPerBus(totalAmount / buses.size());
+        }
+
+        if (totalTickets > 0) {
+            stats.setAverageAmountPerTicket(totalAmount / totalTickets);
+        }
+
+        return stats;
     }
 
     @Override
     public DailyTicketStats getDailyTicketStatsByConductorId(Long id, String date) {
-        LocalDate searchDate=LocalDate.parse(date);
-        DailyTicketStats dailyTicketStats=new DailyTicketStats();
-        Users user=userRepository.findById(id).orElse(new Users());
-        List<BusEntity> buses=user.getBuses();
-        Long totalTicket = 0L;
-        Long bookedTicket=0l;
-        Long paidTicket=0l;
-        Float totalAmount=0f;
-        Float averageAmount;
-        for(BusEntity bus:buses)
-        {
-            List<TicketEntity> tickets=bus.getTickets();
-            for(TicketEntity ticket:tickets)
-            {
-                if(ticket.getBookingTime().toLocalDate().isEqual(searchDate))
-                {
-                    if(ticket.getPaymentTime()==null && ticket.getBookingTime()!=null)
-                    {
-                        bookedTicket+=1;
+        LocalDate searchDate = LocalDate.parse(date);
+        Optional<Users> userOptional = userRepository.findById(id);
+
+        if (userOptional.isEmpty()) {
+            return new DailyTicketStats();
+        }
+
+        DailyTicketStats stats = new DailyTicketStats();
+        List<BusEntity> buses = userOptional.get().getBuses();
+        if (buses.isEmpty()) {
+            return stats;
+        }
+
+        long totalTickets = 0;
+        long bookedTickets = 0;
+        long paidTickets = 0;
+        float totalAmount = 0;
+
+        for (BusEntity bus : buses) {
+            for (TicketEntity ticket : bus.getTickets()) {
+                if (ticket.getBookingTime().toLocalDate().isEqual(searchDate)) {
+                    totalTickets++;
+
+                    if (ticket.getPaymentTime() == null) {
+                        bookedTickets++;
+                    } else {
+                        paidTickets++;
                     }
-                    else
-                    {
-                        paidTicket+=1;
-                    }
-                    totalTicket+=1;
-                    totalAmount+=ticket.getAmount();
+
+                    totalAmount += ticket.getAmount();
                 }
             }
         }
-        averageAmount=totalAmount/totalTicket;
-        dailyTicketStats.setTotalTicket(totalTicket);
-        dailyTicketStats.setBookedTicket(bookedTicket);
-        dailyTicketStats.setPaidTicket(paidTicket);
-        dailyTicketStats.setTotalAmount(totalAmount);
-        dailyTicketStats.setAverageAmount(averageAmount);
-        return dailyTicketStats;
+
+        stats.setTotalTicket(totalTickets);
+        stats.setBookedTicket(bookedTickets);
+        stats.setPaidTicket(paidTickets);
+        stats.setTotalAmount(totalAmount);
+
+        if (totalTickets > 0) {
+            stats.setAverageAmount(totalAmount / totalTickets);
+        } else {
+            stats.setAverageAmount(0f);
+        }
+
+        return stats;
     }
 
     @Override
     public DailyBusStats getDailyBusStatsByConductorId(Long id, String date) {
-        DailyBusStats dailyBusStats=new DailyBusStats();
-        LocalDate searchDate=LocalDate.parse(date);
-        Users user=userRepository.findById(id).orElse(new Users());
-        List<BusEntity> buses=user.getBuses();
-        Set<String> vendors=new HashSet<>();
-        Long totalVendor=0l;
-        Long totalBus= 0l;
-        Long totalPassengers = 0L;
-        Float avPassengerPerBus=0f;
-        Duration totalTime=Duration.ZERO;
-        Duration avJourneyTime=Duration.ZERO;
-        Float totalAmount = 0f;
-        Float averageAmount=0f;
-        for(BusEntity bus:buses)
-        {
-            if(bus.getDateOfJourney().isEqual(searchDate))
-            {
-                List<TicketEntity> tickets=bus.getTickets();
-                vendors.add(bus.getVendorName());
-                for(TicketEntity ticket:tickets)
-                {
-                    totalPassengers+=ticket.getPassengers().size();
-                    totalAmount+=ticket.getAmount();
-                }
-                totalTime=totalTime.plus(Duration.between(bus.getTimeOfDropping(),bus.getTimeOfBoarding()));
-                totalBus+=1;
+        LocalDate searchDate = LocalDate.parse(date);
+        Optional<Users> userOptional = userRepository.findById(id);
+
+        if (userOptional.isEmpty()) {
+            return new DailyBusStats();
+        }
+
+        List<BusEntity> filteredBuses = userOptional.get().getBuses().stream()
+                .filter(bus -> bus.getDateOfJourney().isEqual(searchDate))
+                .toList();
+
+        DailyBusStats stats = new DailyBusStats();
+        if (filteredBuses.isEmpty()) {
+            return stats;
+        }
+
+        Set<String> vendors = filteredBuses.stream()
+                .map(BusEntity::getVendorName)
+                .collect(Collectors.toSet());
+
+        long totalPassengers = 0;
+        float totalAmount = 0;
+        Duration totalDuration = Duration.ZERO;
+
+        for (BusEntity bus : filteredBuses) {
+            for (TicketEntity ticket : bus.getTickets()) {
+                totalPassengers += ticket.getPassengers().size();
+                totalAmount += ticket.getAmount();
             }
+            totalDuration = totalDuration.plus(Duration.between(
+                    bus.getTimeOfDropping(), bus.getTimeOfBoarding()));
         }
-        if(totalBus>0)
-        {
-            averageAmount=totalAmount/totalBus;
-            avPassengerPerBus= (float) (totalPassengers/totalBus);
-            avJourneyTime=totalTime.dividedBy(totalBus);
+
+        stats.setTotalBus((long) filteredBuses.size());
+        stats.setTotalVendor((long) vendors.size());
+        stats.setTotalPassengers(totalPassengers);
+        stats.setTotalAmount(totalAmount);
+        stats.setTotalTime(totalDuration);
+
+        if (!filteredBuses.isEmpty()) {
+            stats.setAverageAmount(totalAmount / filteredBuses.size());
+            stats.setAvPassengerPerBus((float) totalPassengers / filteredBuses.size());
+            stats.setAvJourneyTime(totalDuration.dividedBy(filteredBuses.size()));
         }
-        totalVendor= (long) vendors.size();
-        dailyBusStats.setTotalBus(totalBus);
-        dailyBusStats.setTotalAmount(totalAmount);
-        dailyBusStats.setTotalVendor(totalVendor);
-        dailyBusStats.setTotalPassengers(totalPassengers);
-        dailyBusStats.setAverageAmount(averageAmount);
-        dailyBusStats.setAvPassengerPerBus(avPassengerPerBus);
-        dailyBusStats.setTotalTime(totalTime);
-        dailyBusStats.setAvJourneyTime(avJourneyTime);
-        return dailyBusStats;
+
+        return stats;
     }
 }
