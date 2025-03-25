@@ -51,15 +51,14 @@ public class SecurityConfig {
                         req
                                 .requestMatchers("/register","/login","/check/**").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
-                                .requestMatchers(HttpMethod.POST,"/bus").hasRole("conductor")
+                                .requestMatchers(HttpMethod.POST,"/bus").hasRole("operator")
                                 .requestMatchers(HttpMethod.GET,"/bus").permitAll()
                                 .requestMatchers("/bus/location").permitAll()
-                                .requestMatchers(HttpMethod.DELETE,"/tickets").hasRole("conductor")
-                                .requestMatchers(HttpMethod.DELETE,"/users/**").hasRole("admin")
+                                .requestMatchers(HttpMethod.DELETE,"/tickets").hasRole("operator")
                                 .requestMatchers("/dashboard/total-stats",
                                         "/dashboard/daily-ticket-stats/{date}",
                                         "/dashboard/daily-bus-stats/{date}").hasRole("admin")
-                                .requestMatchers("/dashboard/{id}/**").hasRole("conductor")
+                                .requestMatchers("/dashboard/{id}/**").hasRole("operator")
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
